@@ -2,6 +2,7 @@
 ## Skeleton for Project 2, Winter 2018
 ## ~~~ modify this file, but don't rename it ~~~
 import requests
+import json
 from bs4 import BeautifulSoup
 
 ## you can, and should add to and modify this class any way you see fit
@@ -40,13 +41,47 @@ class NearbyPlace():
 ## returns: all of the NationalSites
 ##        (e.g., National Parks, National Heritage Sites, etc.) that are listed
 ##        for the state at nps.gov
+
+# ---------- Caching ----------
+CACHE_FNAME = "cache.json"
+try:
+    cache_file = open(CACHE_FNAME, "r")
+    cache_contents = cache_file.read()
+    CACHE_DICTION = json.loads(cache_contents)
+    cache_file.close()
+except:
+    CACHE_DICTION = {}
+
+def get_unique_key(url):
+    return url
+
+def make_request_using_cache(url):
+    header = {"User-Agent": "SI_CLASS"}
+    unique_ident = get_unique_key(url)
+
+    if unique_ident in CACHE_DICTION:
+        # access the existing data
+        print("Getting cached data...")
+        return CACHE_DICTION[unique_ident]
+    else:
+        print("Making a request for new data...")
+        # make the request and cache the new data
+        resp = requests.get(url, headers=header)
+        CACHE_DICTION[unique_ident] = resp.text # only store the html
+        dumped_json_cache = json.dumps(CACHE_DICTION)
+        fw = open(CACHE_FNAME,"w")
+        fw.write(dumped_json_cache)
+        fw.close() # Close the open file
+
+        return CACHE_DICTION[unique_ident]
+
 def get_sites_for_state(state_abbr):
     # baseurl
     baseurl = "https://www.nps.gov"
 
     # scrap the homepage
     homepage_url = baseurl + "/index.htm" # set the url of the homepage
-    page_text = requests.get(homepage_url).text
+    page_text = make_request_using_cache(homepage_url)
     page_soup = BeautifulSoup(page_text, "html.parser")
 
     # get state abbrs and end nodes
@@ -61,7 +96,7 @@ def get_sites_for_state(state_abbr):
 
     # scrape the state page
     national_sites_page_url = baseurl + end_node_dic[state_abbr] # set the url of the target page
-    sites_page_text = requests.get(national_sites_page_url).text
+    sites_page_text = make_request_using_cache(national_sites_page_url)
     sites_page_soup = BeautifulSoup(sites_page_text, "html.parser")
 
     # get sites
@@ -79,7 +114,7 @@ def get_sites_for_state(state_abbr):
             national_site = NationalSite(site_type, site_name, site_description, site_url)
 
             # scrape the detail page to get the address
-            detail_page_text = requests.get(site_url).text
+            detail_page_text = make_request_using_cache(site_url)
             detail_page_soup = BeautifulSoup(detail_page_text, "html.parser")
             adr_items = detail_page_soup.find(class_ = "adr")
 
@@ -93,7 +128,7 @@ def get_sites_for_state(state_abbr):
             results_lst.append(national_site)
         except:
             continue
-            
+
     return results_lst
 
 ## Must return the list of NearbyPlaces for the specifite NationalSite
