@@ -143,9 +143,6 @@ def get_sites_for_state(state_abbr):
 ## returns: a list of NearbyPlaces within 10km of the given site
 ##          if the site is not found by a Google Places search, this should
 ##          return an empty list
-
-# ---------- Caching ----------
-
 def get_nearby_places_for_site(national_site):
     # set the key
     google_api_key = secret.google_places_key
@@ -154,8 +151,8 @@ def get_nearby_places_for_site(national_site):
     ## form the url, params: name, type, and key
     google_geo_url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query={}&tyepe={}&key={}".format(national_site.name, national_site.type, google_api_key)
     ## request the data
-    geo_results = requests.get(url = google_geo_url)
-    geo_results_py = json.loads(geo_results.text)
+    geo_results = make_request_using_cache(url = google_geo_url)
+    geo_results_py = json.loads(geo_results)
     ## get the lat & lng for nearby places search
     site_lat = geo_results_py["results"][0]["geometry"]["location"]["lat"]
     site_lng = geo_results_py["results"][0]["geometry"]["location"]["lng"]
@@ -164,8 +161,8 @@ def get_nearby_places_for_site(national_site):
     # for the url, params: lat, lng, radius, and key
     google_places_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={}, {}&radius=10000&key={}".format(site_lat, site_lng, google_api_key)
     ## requesting the data
-    nearby_results = requests.get(url = google_places_url)
-    nearby_results_py = json.loads(nearby_results.text)
+    nearby_results = make_request_using_cache(url = google_places_url)
+    nearby_results_py = json.loads(nearby_results)
 
     # get places
     results_lst = [] # create a list to store the instances of NearbyPlace
