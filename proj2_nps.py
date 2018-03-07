@@ -404,4 +404,27 @@ def plot_nearby_for_site(site_object):
     fig = dict(data=data, layout=layout)
     py.plot(fig, validate=False, filename='usa - national sites')
 
-plot_nearby_for_site(NationalSite("National Lakeshore", "Sleeping Bear Dunes"))
+# ---------- Interactive Program ----------
+command_dic = {}
+command_dic["list"] = "available anytime\nlists all National Sites in a state\nvalid inputs: a two-letter state abbreviation"
+command_dic["nearby"] = "available only if there is an active result set\nlists all Places nearby a given result\nvalid inputs: an integer 1-len(result_set_size)"
+command_dic["map"] = "available only if there is an active result set\ndisplays the current results on a map"
+command_dic["exit"] = "exits the program"
+command_dic["help"] = "lists available commands (these instructions)"
+
+
+user_input = ""
+while(user_input != "exit"):
+    user_input = input("Enter command (or 'help' for options) ")
+    if user_input in command_dic:
+        if user_input == "help":
+            print("help")
+        elif user_input == "list":
+            print("list")
+        elif user_input == "nearby":
+            print("nearby")
+        elif user_input == "map":
+            print("map")
+    else:
+        print("Invalid input. Please try again.")
+        user_input = input("Enter command (or 'help' for options) ")
