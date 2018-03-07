@@ -406,19 +406,29 @@ def plot_nearby_for_site(site_object):
 
 # ---------- Interactive Program ----------
 command_dic = {}
-command_dic["list"] = "available anytime\nlists all National Sites in a state\nvalid inputs: a two-letter state abbreviation"
-command_dic["nearby"] = "available only if there is an active result set\nlists all Places nearby a given result\nvalid inputs: an integer 1-len(result_set_size)"
-command_dic["map"] = "available only if there is an active result set\ndisplays the current results on a map"
-command_dic["exit"] = "exits the program"
-command_dic["help"] = "lists available commands (these instructions)"
-
+command_dic["list"] = "    available anytime\n    lists all National Sites in a state\n    valid inputs: a two-letter state abbreviation"
+command_dic["nearby"] = "    available only if there is an active result set\n    lists all Places nearby a given result\n    valid inputs: an integer 1-len(result_set_size)"
+command_dic["map"] = "    available only if there is an active result set\n    displays the current results on a map"
+command_dic["exit"] = "    exits the program"
+command_dic["help"] = "    lists available commands (these instructions)"
 
 user_input = ""
 while(user_input != "exit"):
     user_input = input("Enter command (or 'help' for options) ")
     if user_input in command_dic:
+        # help
         if user_input == "help":
-            print("help")
+            # print each command and its description
+            for command in command_dic:
+                if command == "list":
+                    print(command + " <stateabbr>")
+                    print(command_dic[command])
+                elif command == "nearby":
+                    print(command + " <result_number>")
+                    print(command_dic[command])
+                else:
+                    print(command)
+                    print(command_dic[command])
         elif user_input == "list":
             print("list")
         elif user_input == "nearby":
