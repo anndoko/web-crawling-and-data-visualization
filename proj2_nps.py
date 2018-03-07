@@ -294,29 +294,46 @@ def plot_sites_for_state(state_abbr):
 ## returns: nothing
 ## side effects: launches a plotly page in the web browser
 def plot_nearby_for_site(site_object):
+    # get the data (lat, lng) of the site object
+    google_api_key = secret.google_places_key
+    # get the GPS information using Google Geocode API
+    ## form the url, params: name, type, and key
+    google_geo_url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query={}&tyepe={}&key={}".format(site_object.name, site_object.type, google_api_key)
+    ## request the data
+    site_geo = make_request_using_cache(url = google_geo_url)
+    site_geo_py = json.loads(site_geo)
+
+    # create lists for plotly
+    site_lat_lst = []
+    site_lng_lst = []
+    site_name_lst = []
+
+    site_name_lst.append(site_object.name)
+    site_lat_lst.append(site_geo_py["results"][0]["geometry"]["location"]["lat"])
+    site_lng_lst.append(site_geo_py["results"][0]["geometry"]["location"]["lng"])
+
     # get a list of  NearbyPlace instances near the site object
     nearby_places_lst = get_nearby_places_for_site(site_object)
 
     # create lists for plotly
-    lat_lst = []
-    lng_lst = []
-    name_lst = []
+    place_lat_lst = []
+    place_lng_lst = []
+    place_name_lst = []
 
     # get the data (lat, lng, and name) of each place and add to the lists
     for place in nearby_places_lst:
-        lat_lst.append(place.lat)
-        lng_lst.append(place.lng)
-        name_lst.append(place.name)
+        place_lat_lst.append(place.lat)
+        place_lng_lst.append(place.lng)
+        place_name_lst.append(place.name)
 
     # plotly
     mapbox_access_token = "v6sd6xz0qu"
-
     trace1 = dict(
             type = 'scattergeo',
             locationmode = 'USA-states',
-            lon = lng_lst,
-            lat = lat_lst,
-            text = name_lst,
+            lon = site_lng_lst,
+            lat = site_lat_lst,
+            text = site_name_lst,
             mode = 'markers',
             marker = dict(
                 size = 20,
@@ -324,15 +341,29 @@ def plot_nearby_for_site(site_object):
                 color = 'red'
             ))
 
-    data = [trace1]
+    trace2 = dict(
+            type = 'scattergeo',
+            locationmode = 'USA-states',
+            lon = place_lng_lst,
+            lat = place_lat_lst,
+            text = place_name_lst,
+            mode = 'markers',
+            marker = dict(
+                size = 8,
+                symbol = 'circle',
+                color = 'blue'
+            ))
+
+    data = [trace1, trace2]
+    print(data)
 
     min_lat = 10000
     max_lat = -10000
     min_lon = 10000
     max_lon = -10000
 
-    lat_vals = lat_lst
-    lon_vals = lng_lst
+    lat_vals = place_lat_lst
+    lon_vals = place_lng_lst
     for str_v in lat_vals:
         v = float(str_v)
         if v < min_lat:
