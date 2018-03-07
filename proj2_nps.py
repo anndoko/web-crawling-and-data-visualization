@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 ##
 ## the starter code is here just to make the tests run (and fail)
 class NationalSite():
-    def __init__(self, type, name, desc, url=None):
+    def __init__(self, type, name, desc="", url=None):
         self.type = type
         self.name = name
         self.description = desc
@@ -42,6 +42,7 @@ class NearbyPlace():
 
     def __str__(self):
         return self.name
+
 
 ## Must return the list of NationalSites for the specified state
 ## param: the 2-letter state abbreviation, lowercase
@@ -184,6 +185,7 @@ def get_nearby_places_for_site(national_site):
 
     return results_lst
 
+
 ## Must plot all of the NationalSites listed for the state on nps.gov
 ## Note that some NationalSites might actually be located outside the state.
 ## If any NationalSites are not found by the Google Places API they should
@@ -192,12 +194,15 @@ def get_nearby_places_for_site(national_site):
 ## returns: nothing
 ## side effects: launches a plotly page in the web browser
 def plot_sites_for_state(state_abbr):
+    # get a list of NationalSite instances in the state
     sites_lst = get_sites_for_state(state_abbr)
 
+    # create lists for plotly
     lat_lst = []
     lng_lst = []
     name_lst = []
 
+    # get the data (lat, lng, and name) of each site and add to the lists
     for site in sites_lst:
         # set the key
         google_api_key = secret.google_places_key
@@ -215,7 +220,6 @@ def plot_sites_for_state(state_abbr):
             lat_lst.append(site_lat)
             lng_lst.append(site_lng)
             name_lst.append(site.name)
-
         except:
             print("N/A")
 
@@ -284,13 +288,89 @@ def plot_sites_for_state(state_abbr):
     fig = dict(data=data, layout=layout)
     py.plot(fig, validate=False, filename='usa - national sites')
 
-test = plot_sites_for_state("mi")
-
-
 
 ## Must plot up to 20 of the NearbyPlaces found using the Google Places API
 ## param: the NationalSite around which to search
 ## returns: nothing
 ## side effects: launches a plotly page in the web browser
 def plot_nearby_for_site(site_object):
-    pass
+    # get a list of  NearbyPlace instances near the site object
+    nearby_places_lst = get_nearby_places_for_site(site_object)
+
+    # create lists for plotly
+    lat_lst = []
+    lng_lst = []
+    name_lst = []
+
+    # get the data (lat, lng, and name) of each place and add to the lists
+    for place in nearby_places_lst:
+        lat_lst.append(place.lat)
+        lng_lst.append(place.lng)
+        name_lst.append(place.name)
+
+    # plotly
+    mapbox_access_token = "v6sd6xz0qu"
+
+    trace1 = dict(
+            type = 'scattergeo',
+            locationmode = 'USA-states',
+            lon = lng_lst,
+            lat = lat_lst,
+            text = name_lst,
+            mode = 'markers',
+            marker = dict(
+                size = 20,
+                symbol = 'star',
+                color = 'red'
+            ))
+
+    data = [trace1]
+
+    min_lat = 10000
+    max_lat = -10000
+    min_lon = 10000
+    max_lon = -10000
+
+    lat_vals = lat_lst
+    lon_vals = lng_lst
+    for str_v in lat_vals:
+        v = float(str_v)
+        if v < min_lat:
+            min_lat = v
+        if v > max_lat:
+            max_lat = v
+    for str_v in lon_vals:
+        v = float(str_v)
+        if v < min_lon:
+            min_lon = v
+        if v > max_lon:
+            max_lon = v
+
+    center_lat = (max_lat+min_lat) / 2
+    center_lon = (max_lon+min_lon) / 2
+
+    max_range = max(abs(max_lat - min_lat), abs(max_lon - min_lon))
+    padding = max_range * .10
+    lat_axis = [min_lat - padding, max_lat + padding]
+    lon_axis = [min_lon - padding, max_lon + padding]
+
+    layout = dict(
+            geo = dict(
+                scope='usa',
+                projection=dict( type='albers usa' ),
+                showland = True,
+                landcolor = "rgb(250, 250, 250)",
+                subunitcolor = "rgb(100, 217, 217)",
+                countrycolor = "rgb(217, 100, 217)",
+                lataxis = {'range': lat_axis},
+                lonaxis = {'range': lon_axis},
+                center = {'lat': center_lat, 'lon': center_lon },
+                countrywidth = 3,
+                subunitwidth = 3
+            ),
+        )
+
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, validate=False, filename='usa - national sites')
+
+plot_nearby_for_site(NationalSite("National Lakeshore", "Sleeping Bear Dunes"))
