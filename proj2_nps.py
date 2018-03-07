@@ -63,7 +63,6 @@ def get_unique_key(url):
     return url
 
 def make_request_using_cache(url):
-    header = {"User-Agent": "SI_CLASS"}
     unique_ident = get_unique_key(url)
 
     if unique_ident in CACHE_DICTION:
@@ -73,7 +72,7 @@ def make_request_using_cache(url):
     else:
         print("Making a request for new data...")
         # make the request and cache the new data
-        resp = requests.get(url, headers=header)
+        resp = requests.get(url)
         CACHE_DICTION[unique_ident] = resp.text # only store the html
         dumped_json_cache = json.dumps(CACHE_DICTION)
         fw = open(CACHE_FNAME,"w")
