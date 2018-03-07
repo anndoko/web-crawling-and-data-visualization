@@ -4,6 +4,7 @@
 import requests
 import json
 import secret
+import plotly.plotly as py
 from bs4 import BeautifulSoup
 
 ## you can, and should add to and modify this class any way you see fit
@@ -191,7 +192,101 @@ def get_nearby_places_for_site(national_site):
 ## returns: nothing
 ## side effects: launches a plotly page in the web browser
 def plot_sites_for_state(state_abbr):
-    pass
+    sites_lst = get_sites_for_state(state_abbr)
+
+    lat_lst = []
+    lng_lst = []
+    name_lst = []
+
+    for site in sites_lst:
+        # set the key
+        google_api_key = secret.google_places_key
+        # get the GPS information using Google Geocode API
+        ## form the url, params: name, type, and key
+        google_geo_url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query={}&tyepe={}&key={}".format(site.name, site.type, google_api_key)
+        ## request the data
+        site_geo = make_request_using_cache(url = google_geo_url)
+        site_geo_py = json.loads(site_geo)
+        try:
+            ## get the lat & lng for nearby places search
+            site_lat = site_geo_py["results"][0]["geometry"]["location"]["lat"]
+            site_lng = site_geo_py["results"][0]["geometry"]["location"]["lng"]
+            ## add data to the lists
+            lat_lst.append(site_lat)
+            lng_lst.append(site_lng)
+            name_lst.append(site.name)
+
+        except:
+            print("N/A")
+
+    # plotly
+    mapbox_access_token = "v6sd6xz0qu"
+
+    trace1 = dict(
+            type = 'scattergeo',
+            locationmode = 'USA-states',
+            lon = lng_lst,
+            lat = lat_lst,
+            text = name_lst,
+            mode = 'markers',
+            marker = dict(
+                size = 20,
+                symbol = 'star',
+                color = 'red'
+            ))
+
+    data = [trace1]
+
+    min_lat = 10000
+    max_lat = -10000
+    min_lon = 10000
+    max_lon = -10000
+
+    lat_vals = lat_lst
+    lon_vals = lng_lst
+    for str_v in lat_vals:
+        v = float(str_v)
+        if v < min_lat:
+            min_lat = v
+        if v > max_lat:
+            max_lat = v
+    for str_v in lon_vals:
+        v = float(str_v)
+        if v < min_lon:
+            min_lon = v
+        if v > max_lon:
+            max_lon = v
+
+    center_lat = (max_lat+min_lat) / 2
+    center_lon = (max_lon+min_lon) / 2
+
+    max_range = max(abs(max_lat - min_lat), abs(max_lon - min_lon))
+    padding = max_range * .10
+    lat_axis = [min_lat - padding, max_lat + padding]
+    lon_axis = [min_lon - padding, max_lon + padding]
+
+    layout = dict(
+            geo = dict(
+                scope='usa',
+                projection=dict( type='albers usa' ),
+                showland = True,
+                landcolor = "rgb(250, 250, 250)",
+                subunitcolor = "rgb(100, 217, 217)",
+                countrycolor = "rgb(217, 100, 217)",
+                lataxis = {'range': lat_axis},
+                lonaxis = {'range': lon_axis},
+                center = {'lat': center_lat, 'lon': center_lon },
+                countrywidth = 3,
+                subunitwidth = 3
+            ),
+        )
+
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, validate=False, filename='usa - national sites')
+
+test = plot_sites_for_state("mi")
+
+
 
 ## Must plot up to 20 of the NearbyPlaces found using the Google Places API
 ## param: the NationalSite around which to search
