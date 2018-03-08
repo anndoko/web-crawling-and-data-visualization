@@ -69,10 +69,8 @@ def make_request_using_cache(url):
 
     if unique_ident in CACHE_DICTION:
         # access the existing data
-        print("Getting cached data...")
         return CACHE_DICTION[unique_ident]
     else:
-        print("Making a request for new data...")
         # make the request and cache the new data
         resp = requests.get(url)
         CACHE_DICTION[unique_ident] = resp.text # only store the html
@@ -415,26 +413,39 @@ command_dic["help"] = "    lists available commands (these instructions)"
 user_input = ""
 while(user_input != "exit"):
     user_input = input("Enter command (or 'help' for options) ")
-    if user_input in command_dic:
-        # help
-        if user_input == "help":
-            # print each command and its description
-            for command in command_dic:
-                if command == "list":
-                    print(command + " <stateabbr>")
-                    print(command_dic[command])
-                elif command == "nearby":
-                    print(command + " <result_number>")
-                    print(command_dic[command])
-                else:
-                    print(command)
-                    print(command_dic[command])
-        elif user_input == "list":
-            print("list")
-        elif user_input == "nearby":
-            print("nearby")
-        elif user_input == "map":
-            print("map")
-    else:
-        print("Invalid input. Please try again.")
-        user_input = input("Enter command (or 'help' for options) ")
+    # the help command
+    if user_input == "help":
+        # print each command and its description
+        for command in command_dic:
+            if command == "list":
+                print(command + " <stateabbr>")
+                print(command_dic[command])
+            elif command == "nearby":
+                print(command + " <result_number>")
+                print(command_dic[command])
+            else:
+                print(command)
+                print(command_dic[command])
+                
+    # the list command
+    elif "list" in user_input:
+        if len(user_input) <= len("list "):
+            print("Please include <state_abbr>")
+            user_input = input("Enter command (or 'help' for options) ")
+        else:
+            try:
+                param = user_input[5:]
+                search_results_lst = get_sites_for_state(param)
+                index = 1
+                for result in search_results_lst:
+                    print(str(index) + " " + result.__str__())
+                    index += 1
+            except:
+                continue
+
+    # the nearby command
+    elif "nearby" in user_input:
+        print("nearby")
+    # the map command
+    elif user_input == "map":
+        print("map")
