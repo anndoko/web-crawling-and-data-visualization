@@ -403,49 +403,76 @@ def plot_nearby_for_site(site_object):
     py.plot(fig, validate=False, filename='usa - national sites')
 
 # ---------- Interactive Program ----------
-command_dic = {}
-command_dic["list"] = "    available anytime\n    lists all National Sites in a state\n    valid inputs: a two-letter state abbreviation"
-command_dic["nearby"] = "    available only if there is an active result set\n    lists all Places nearby a given result\n    valid inputs: an integer 1-len(result_set_size)"
-command_dic["map"] = "    available only if there is an active result set\n    displays the current results on a map"
-command_dic["exit"] = "    exits the program"
-command_dic["help"] = "    lists available commands (these instructions)"
-
-user_input = ""
-while(user_input != "exit"):
+## functions for the Interactive program
+def prompt():
     user_input = input("Enter command (or 'help' for options) ")
-    # the help command
-    if user_input == "help":
-        # print each command and its description
-        for command in command_dic:
-            if command == "list":
-                print(command + " <stateabbr>")
-                print(command_dic[command])
-            elif command == "nearby":
-                print(command + " <result_number>")
-                print(command_dic[command])
-            else:
-                print(command)
-                print(command_dic[command])
-                
-    # the list command
-    elif "list" in user_input:
-        if len(user_input) <= len("list "):
-            print("Please include <state_abbr>")
-            user_input = input("Enter command (or 'help' for options) ")
-        else:
-            try:
-                param = user_input[5:]
-                search_results_lst = get_sites_for_state(param)
-                index = 1
-                for result in search_results_lst:
-                    print(str(index) + " " + result.__str__())
-                    index += 1
-            except:
-                continue
+    return user_input
 
-    # the nearby command
-    elif "nearby" in user_input:
-        print("nearby")
-    # the map command
-    elif user_input == "map":
-        print("map")
+def help_command():
+    # options
+    command_dic = {}
+    command_dic["list"] = "    available anytime\n    lists all National Sites in a state\n    valid inputs: a two-letter state abbreviation"
+    command_dic["nearby"] = "    available only if there is an active result set\n    lists all Places nearby a given result\n    valid inputs: an integer 1-len(result_set_size)"
+    command_dic["map"] = "    available only if there is an active result set\n    displays the current results on a map"
+    command_dic["exit"] = "    exits the program"
+    command_dic["help"] = "    lists available commands (these instructions)"
+
+    # print the options
+    for command in command_dic:
+        if command == "list":
+            print(command + " <stateabbr>")
+            print(command_dic[command])
+        elif command == "nearby":
+            print(command + " <result_number>")
+            print(command_dic[command])
+        else:
+            print(command)
+            print(command_dic[command])
+
+def check_if_nearby_or_map(user_input):
+    if user_input == "nearby" or user_input == "map":
+        return True
+
+## run the program
+if __name__ == "__main__":
+    user_input = prompt() # prompt user for input
+    result_set = [] # create an empty list to store the results
+
+    # end the program if user enters "exist"
+    while user_input != "exit":
+        # if user enter a search term (str), make data using the string
+        if check_if_nearby_or_map(user_input) != True:
+            if user_input == "help":
+                help_command()
+            elif "list" in user_input:
+                # set an integer variable for indexing
+                index_num = 1
+
+                if len(user_input) <= len("list "):
+                    print("Please include <state_abbr>")
+                    user_input = input("Enter command (or 'help' for options) ")
+                else:
+                    try:
+                        param = user_input[5:]
+                        result_set = get_sites_for_state(param)
+                        for result in result_set:
+                            print(index_num, result)
+                            index_num += 1
+                    except:
+                        print("Invalid search query.")
+        # if user enters a num
+        else:
+            # if user hasn't done any search yet, ask for input again
+            if result_set == []:
+                print("You haven't done any search yet.\nPlease use the 'list' command first.")
+                user_input = prompt()
+                continue
+            # if user has done a search before
+            else:
+                if "nearby" in user_input:
+                    print("nearby")
+                elif user_input == "map":
+                    print("map")
+
+        # prompt user for input again
+        user_input = prompt()
