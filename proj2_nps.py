@@ -427,7 +427,7 @@ def plot_nearby_for_site(site_object):
 ## functions for the Interactive program
 def prompt():
     user_input = input("\nEnter command (or 'help' for options) ")
-    return user_input
+    return user_input.lower()
 
 def check_if_nearby_or_map(user_input):
     if ("nearby" in user_input) or ("map" in user_input):
