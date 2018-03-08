@@ -468,14 +468,17 @@ if __name__ == "__main__":
             else:
                 # set an integer variable for indexing
                 if "nearby" in user_input:
-                    index_input = int(user_input[7:]) - 1
-                    search_site = result_set[index_input]
-                    print(search_site)
-                    nearby_result_set = get_nearby_places_for_site(search_site)
-                    nearby_index = 1
-                    for result in nearby_result_set:
-                        print(nearby_index, result)
-                        nearby_index += 1
+                    try:
+                        index_input = int(user_input[7:]) - 1
+                        search_site = result_set[index_input]
+                        print(search_site)
+                        nearby_result_set = get_nearby_places_for_site(search_site)
+                        nearby_index = 1
+                        for result in nearby_result_set:
+                            print(nearby_index, result)
+                            nearby_index += 1
+                    except:
+                        print("Invalid search query.")
                 elif user_input == "map":
                     try:
                         search_site
