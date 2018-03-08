@@ -416,23 +416,25 @@ def check_if_nearby_or_map(user_input):
 def help_command():
     # options
     command_dic = {}
-    command_dic["list"] = "    available anytime\n    lists all National Sites in a state\n    valid inputs: a two-letter state abbreviation"
-    command_dic["nearby"] = "    available only if there is an active result set\n    lists all Places nearby a given result\n    valid inputs: an integer 1-len(result_set_size)"
-    command_dic["map"] = "    available only if there is an active result set\n    displays the current results on a map"
+    command_dic["list"] = "    available anytime\n        lists all National Sites in a state\n        valid inputs: a two-letter state abbreviation"
+    command_dic["nearby"] = "    available only if there is an active result set\n        lists all Places nearby a given result\n        valid inputs: an integer 1-len(result_set_size)"
+    command_dic["map"] = "    available only if there is an active result set\n        displays the current results on a map"
     command_dic["exit"] = "    exits the program"
     command_dic["help"] = "    lists available commands (these instructions)"
 
     # print the options
+    print("")
     for command in command_dic:
         if command == "list":
-            print(command + " <stateabbr>")
-            print(command_dic[command])
+            print("    " + command + " <stateabbr>")
+            print("    " + command_dic[command])
         elif command == "nearby":
-            print(command + " <result_number>")
-            print(command_dic[command])
+            print("    " + command + " <result_number>")
+            print("    " + command_dic[command])
         else:
-            print(command)
-            print(command_dic[command])
+            print("    " + command)
+            print("    " + command_dic[command])
+    print("")
 
 def list_command(state_abbr):
     result_set = get_sites_for_state(state_abbr)
