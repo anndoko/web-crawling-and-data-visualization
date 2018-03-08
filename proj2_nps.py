@@ -407,6 +407,12 @@ def prompt():
     user_input = input("Enter command (or 'help' for options) ")
     return user_input
 
+def check_if_nearby_or_map(user_input):
+    if ("nearby" in user_input) or ("map" in user_input):
+        return True
+
+
+## commands: help, list, nearby, map
 def help_command():
     # options
     command_dic = {}
@@ -428,11 +434,31 @@ def help_command():
             print(command)
             print(command_dic[command])
 
-def check_if_nearby_or_map(user_input):
-    if ("nearby" in user_input) or ("map" in user_input):
-        return True
+def list_command(state_abbr):
+    result_set = get_sites_for_state(state_abbr)
+    # set an integer variable for indexing
+    index = 1
+    for result in result_set:
+        print(index, result)
+        index += 1
 
-# run the program
+    return result_set
+
+def nearby_command(search_site):
+    nearby_result_set = get_nearby_places_for_site(search_site)
+    # set an integer variable for indexing
+    index = 1
+    for result in nearby_result_set:
+        print(index, result)
+        index += 1
+
+    return nearby_result_set
+
+def map_command(search_site):
+    plot_nearby_for_site(search_site)
+
+
+## run the program
 if __name__ == "__main__":
     user_input = prompt() # prompt user for input
     result_set = [] # create an empty list to store the results
@@ -443,19 +469,13 @@ if __name__ == "__main__":
             if user_input == "help":
                 help_command()
             elif "list" in user_input:
-                # set an integer variable for indexing
-                site_index = 1
-
                 if len(user_input) <= len("list "):
                     print("Please include <state_abbr>")
-                    user_input = input("Enter command (or 'help' for options) ")
+                    user_input = prompt()
                 else:
                     try:
-                        param_input = user_input[5:]
-                        result_set = get_sites_for_state(param_input)
-                        for result in result_set:
-                            print(site_index, result)
-                            site_index += 1
+                        state_abbr = user_input[5:7]
+                        result_set = list_command(state_abbr)
                     except:
                         print("Invalid search query.")
         else:
@@ -466,23 +486,17 @@ if __name__ == "__main__":
                 continue
             # if user has done a search before
             else:
-                # set an integer variable for indexing
                 if "nearby" in user_input:
                     try:
                         index_input = int(user_input[7:]) - 1
                         search_site = result_set[index_input]
-                        print(search_site)
-                        nearby_result_set = get_nearby_places_for_site(search_site)
-                        nearby_index = 1
-                        for result in nearby_result_set:
-                            print(nearby_index, result)
-                            nearby_index += 1
+                        nearby_command(search_site)
                     except:
                         print("Invalid search query.")
                 elif user_input == "map":
                     try:
                         search_site
-                        plot_nearby_for_site(search_site)
+                        map_command(search_site)
                     except NameError:
                         print("Please use the 'nearby <result_number>' command to choose a site.")
 
