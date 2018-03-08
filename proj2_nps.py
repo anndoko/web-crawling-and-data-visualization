@@ -81,6 +81,28 @@ def make_request_using_cache(url):
 
         return CACHE_DICTION[unique_ident]
 
+def get_state_name(state_abbr):
+    # baseurl
+    baseurl = "https://www.nps.gov"
+
+    # scrap the homepage
+    homepage_url = baseurl + "/index.htm" # set the url of the homepage
+    page_text = make_request_using_cache(homepage_url)
+    page_soup = BeautifulSoup(page_text, "html.parser")
+
+    dropdown_menu_items = page_soup.find(class_ = "dropdown-menu")
+    state_full = "state_full"
+    for item in dropdown_menu_items:
+        try:
+            end_node = item.find("a")["href"]
+        except:
+            continue
+
+        if state_abbr in end_node:
+            state_full = item.string
+
+    return state_full
+
 def get_sites_for_state(state_abbr):
     # baseurl
     baseurl = "https://www.nps.gov"
@@ -404,7 +426,7 @@ def plot_nearby_for_site(site_object):
 # ---------- Interactive Program ----------
 ## functions for the Interactive program
 def prompt():
-    user_input = input("Enter command (or 'help' for options) ")
+    user_input = input("\nEnter command (or 'help' for options) ")
     return user_input
 
 def check_if_nearby_or_map(user_input):
@@ -437,7 +459,14 @@ def help_command():
     print("")
 
 def list_command(state_abbr):
+    # call the get_sites_for_state to search for national sites
     result_set = get_sites_for_state(state_abbr)
+    # get the name of the state
+    state_full = get_state_name(state_abbr)
+
+    # print the title
+    print("National Sites in " + state_full + "\n")
+
     # set an integer variable for indexing
     index = 1
     for result in result_set:
@@ -447,7 +476,12 @@ def list_command(state_abbr):
     return result_set
 
 def nearby_command(search_site):
+    # call the get_nearby_places_for_site to search for nearby places
     nearby_result_set = get_nearby_places_for_site(search_site)
+
+    # print the title
+    print("Places near " + search_site.name + "\n")
+
     # set an integer variable for indexing
     index = 1
     for result in nearby_result_set:
@@ -504,3 +538,6 @@ if __name__ == "__main__":
 
         # prompt user for input again
         user_input = prompt()
+
+    # end of the program
+    print("Bye!")
